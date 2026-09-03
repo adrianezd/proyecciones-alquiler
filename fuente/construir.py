@@ -80,20 +80,31 @@ def main() -> None:
 
     tasas = tasas[-30:]
 
+    regiones = {}
+    for nombre_region, cod_region in datos.localizar_series_regionales():
+        tasas_region = datos.tasas_anuales(cod_region)
+        if len(tasas_region) >= 4:
+            regiones[nombre_region] = tasas_region[-30:]
+
     escribir(
         "proyeccion.html",
         acento="alquiler",
         codigo_serie=codigo,
         titulo="Precio del alquiler: proyeccion a partir del INE",
         descripcion="Como evolucionaria una renta mensual si el indice de alquiler del INE "
-                    "se comportara como hasta ahora.",
+                    "se comportara como hasta ahora, con desglose por comunidad autonoma.",
         encabezado="Precio del alquiler",
         bajada="La misma mecanica que la vivienda en compra, aplicada a la renta mensual. "
-               "Ojo: la serie oficial de alquiler es corta, hay menos historico del que "
-               "seria deseable.",
+               "Elige tu comunidad autonoma si el dato nacional no te sirve. Ojo: la serie "
+               "oficial de alquiler es corta, hay menos historico del que seria deseable.",
         etiqueta_valor="Alquiler mensual hoy",
         valor_defecto=900,
-        datos_json=json_seguro({"tasas": tasas, "valor_defecto": 900}),
+        regiones=sorted(regiones.keys()),
+        datos_json=json_seguro({
+            "tasas": tasas,
+            "valor_defecto": 900,
+            "regiones": regiones,
+        }),
     )
 
     (SALIDA / "robots.txt").write_text(
